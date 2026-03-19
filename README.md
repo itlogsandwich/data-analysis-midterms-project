@@ -1,4 +1,4 @@
-# Data Analysis Midterms Project
+# Data Analysis Midterms Project [Data set will be changed. I will code this again tomorrow or weekends after finishing some tickets]
 
 ### About
 A simple data analysis on chess dataset from Lichess (source: <a href="https://www.kaggle.com/datasets/datasnaek/chess">Kaggle</a>). I wanted to try and experiment using Rust's data engineering and analysis <br/>
