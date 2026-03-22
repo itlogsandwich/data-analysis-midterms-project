@@ -22,7 +22,7 @@ The dataset was sourced from Kaggle, originally collected from real European car
 
 **Transaction Count by Class** — The dataset is severely imbalanced: ~284,315 legitimate transactions vs only ~492 fraud cases (less than 0.2%). A logarithmic scale was required to make fraud visible on the chart. This imbalance reflects real-world fraud rates and is a critical characteristic of the dataset.
 
-**Average Transaction Amount by Class** — Fraudulent transactions have a higher average amount (~$122) compared to legitimate ones (~$88). This suggests fraudsters tend to attempt higher-value transactions, possibly to maximize gain per stolen credential.
+**Average Transaction Amount by Class** — Fraudulent transactions have a higher average amount (\~$122) compared to legitimate ones (\~$88). This suggests fraudsters tend to attempt higher-value transactions, possibly to maximize gain per stolen credential.
 
 **Average Time Elapsed by Class** — Legitimate transactions have a slightly higher average time elapsed (~95,000s) compared to fraudulent ones (~80,000s). This may indicate that fraud is more concentrated earlier in the observation window, potentially reflecting the rapid exploitation of stolen card details before they are detected and blocked.
 
