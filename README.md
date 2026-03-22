@@ -29,3 +29,6 @@ The dataset was sourced from Kaggle, originally collected from real European car
 ---
 
 Overall, while the dataset is heavily skewed toward legitimate transactions, measurable differences in both amount and timing exist between classes — suggesting these features carry meaningful signal for fraud detection.
+
+
+### NOTE: AI-Assisted cos I got lazy
