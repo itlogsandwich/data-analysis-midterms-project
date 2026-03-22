@@ -28,7 +28,7 @@ fn amount_distribution_chart(amounts: Vec<f64>, labels: Vec<&str>) -> LazyResult
     root.fill(&WHITE)?;
 
     let bucket_size = 50.0;
-    let max_amount = 2500.0; // cap at 2500 to avoid extreme outliers
+    let max_amount = 2500.0;
     let num_buckets = (max_amount / bucket_size) as usize;
 
     let mut fraud_buckets = vec![0u32; num_buckets];
@@ -60,7 +60,6 @@ fn amount_distribution_chart(amounts: Vec<f64>, labels: Vec<&str>) -> LazyResult
         .y_desc("Count")
         .draw()?;
 
-    // Draw legitimate bars
     chart.draw_series(
         legit_buckets.iter().enumerate().map(|(i, count)| {
             let x0 = i as f64 * bucket_size;
@@ -69,7 +68,6 @@ fn amount_distribution_chart(amounts: Vec<f64>, labels: Vec<&str>) -> LazyResult
         })
     )?;
 
-    // Draw fraud bars on top
     chart.draw_series(
         fraud_buckets.iter().enumerate().map(|(i, count)| {
             let x0 = i as f64 * bucket_size;
@@ -227,7 +225,6 @@ fn main() -> LazyResult<()>
                 .alias("class_label")
         );
 
-    // Analysis 1: avg amount by class
     let avg_amount = lazy_df.clone()
         .group_by([col("class_label")])
         .agg([col("Amount").mean().alias("avg_amount")])
@@ -251,7 +248,6 @@ fn main() -> LazyResult<()>
         (labels, means)
     };
 
-    // Analysis 2: avg time by class
     let avg_time = lazy_df.clone()
         .group_by([col("class_label")])
         .agg([col("Time").mean().alias("avg_time")])
@@ -275,7 +271,6 @@ fn main() -> LazyResult<()>
         (labels, means)
     };
 
-    // Analysis 3: transaction count by class
     let class_counts = lazy_df.clone()
         .group_by([col("class_label")])
         .agg([col("Class").count().alias("tx_count")])
@@ -298,6 +293,7 @@ fn main() -> LazyResult<()>
 
         (labels, counts)
     };
+
     let amount_dist = lazy_df.clone()
         .select([col("Amount"), col("class_label")])
         .collect()?;
