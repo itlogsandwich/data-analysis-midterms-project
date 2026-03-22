@@ -21,6 +21,67 @@ fn get_data_frame() -> PolarsResult<DataFrame>
         .finish()
 }
 
+fn amount_distribution_chart(amounts: Vec<f64>, labels: Vec<&str>) -> LazyResult<()>
+{
+    let root = BitMapBackend::new("amount_distribution.png", (1000, 600))
+        .into_drawing_area();
+    root.fill(&WHITE)?;
+
+    let bucket_size = 50.0;
+    let max_amount = 2500.0; // cap at 2500 to avoid extreme outliers
+    let num_buckets = (max_amount / bucket_size) as usize;
+
+    let mut fraud_buckets = vec![0u32; num_buckets];
+    let mut legit_buckets = vec![0u32; num_buckets];
+
+    for (amount, label) in amounts.iter().zip(labels.iter()) {
+        let idx = (*amount / bucket_size) as usize;
+        if idx < num_buckets {
+            if *label == "Fraud" {
+                fraud_buckets[idx] += 1;
+            } else {
+                legit_buckets[idx] += 1;
+            }
+        }
+    }
+
+    let max_count = legit_buckets.iter().chain(fraud_buckets.iter())
+        .cloned().max().unwrap_or(1) as f64 * 1.1;
+
+    let mut chart = ChartBuilder::on(&root)
+        .caption("Transaction Amount Distribution: Fraud vs Legitimate", ("sans-serif", 26))
+        .margin(30)
+        .x_label_area_size(40)
+        .y_label_area_size(80)
+        .build_cartesian_2d(0f64..max_amount, 0f64..max_count)?;
+
+    chart.configure_mesh()
+        .x_desc("Amount (USD)")
+        .y_desc("Count")
+        .draw()?;
+
+    // Draw legitimate bars
+    chart.draw_series(
+        legit_buckets.iter().enumerate().map(|(i, count)| {
+            let x0 = i as f64 * bucket_size;
+            let x1 = x0 + bucket_size;
+            Rectangle::new([(x0, 0.0), (x1, *count as f64)], BLUE.mix(0.5).filled())
+        })
+    )?;
+
+    // Draw fraud bars on top
+    chart.draw_series(
+        fraud_buckets.iter().enumerate().map(|(i, count)| {
+            let x0 = i as f64 * bucket_size;
+            let x1 = x0 + bucket_size;
+            Rectangle::new([(x0, 0.0), (x1, *count as f64)], RED.mix(0.7).filled())
+        })
+    )?;
+
+    root.present()?;
+    Ok(())
+}
+
 fn class_to_avg_amount_chart(labels: Vec<&str>, means: Vec<f64>) -> LazyResult<()>
 {
     let max_val = means.iter().cloned().fold(0.0f64, f64::max) * 1.2;
@@ -237,7 +298,28 @@ fn main() -> LazyResult<()>
 
         (labels, counts)
     };
+    let amount_dist = lazy_df.clone()
+        .select([col("Amount"), col("class_label")])
+        .collect()?;
 
+    let amount_dist_source =
+    {
+        let amounts: Vec<f64> = amount_dist["Amount"]
+            .f64()?
+            .into_iter()
+            .map(|x| x.unwrap_or(0.0))
+            .collect();
+
+        let labels: Vec<&str> = amount_dist["class_label"]
+            .str()?
+            .into_iter()
+            .map(|s| s.unwrap())
+            .collect();
+
+        (amounts, labels)
+    };
+
+    let _ = amount_distribution_chart(amount_dist_source.0, amount_dist_source.1);
     let _ = class_to_avg_amount_chart(avg_amount_source.0, avg_amount_source.1);
     let _ = class_to_avg_time_chart(avg_time_source.0, avg_time_source.1);
     let _ = class_to_count_chart(class_count_source.0, class_count_source.1);
